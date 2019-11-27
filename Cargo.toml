@@ -1,0 +1,35 @@
+[package]
+name = "seed_comp_helpers"
+version = "0.0.1"
+authors = ["rebo <rebotfc@gmail.com>"]
+repository = "https://github.com/rebo/seed_comp_helpers"
+description = "Component State - a clone of React Hooks use_state"
+license = "MIT/Apache-2.0"
+readme = "./README.md"
+homepage = "https://github.com/rebo/seed_comp_helpers"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+comp_state = "0.0.1"
+enclose = "1.1.8"
+anymap = "0.12.1"
+
+# Keep all the below inline with seed
+seed = "0.4.2"
+wasm-bindgen-futures = "0.3.22"
+wasm-bindgen = {version = "0.2.50", features = ["serde-serialize"]}
+serde = { version = "^1.0.92", features = ['derive'] }
+serde_json = "^1.0.39"
+futures = "^0.1.27"
+js-sys = "0.3.27"
+
+
+
+[dependencies.web-sys]
+version = "^0.3.28"
+features = [
+  "ScrollToOptions",
+  "Navigator",
+]
