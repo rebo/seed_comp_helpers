@@ -1,5 +1,10 @@
 pub mod use_fetch_collection_hook;
 pub mod use_fetch_hook;
+use std::future::Future;
+use std::pin::Pin;
+use std::task::{Context, Poll};
+use wasm_bindgen::prelude::*;
+use wasm_bindgen_futures::JsFuture;
 
 pub use use_fetch_collection_hook::{
     use_fetch_collection, IntoList, UseFetchCollection, UseFetchCollectionStatusTrait,
@@ -7,14 +12,12 @@ pub use use_fetch_collection_hook::{
 pub use use_fetch_hook::{use_fetch, UseFetch, UseFetchStatusTrait};
 
 use comp_state::{topo, update_state_with_topo_id};
-use futures::{Async, Future, Poll};
+
 use seed::{prelude::*, *};
 use serde::de::{DeserializeOwned, Deserializer};
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 use std::str::FromStr;
-
-use wasm_bindgen_futures::JsFuture;
 
 // Code + docs: https://rustwasm.github.io/wasm-bindgen/api/wasm_bindgen_futures/
 
@@ -48,7 +51,7 @@ pub(crate) fn fetch_json<
     url: String,
     json: J,
     method: Method,
-) -> impl Future<Item = Ms, Error = Ms> {
+) -> impl Future<Output = Result<Ms, Ms>> {
     seed::fetch::Request::new(url)
         .method(method)
         .send_json(&json)
@@ -67,6 +70,7 @@ pub(crate) fn fetch_json<
 // to ensure the fetch future is properly executed.
 
 /// A future that becomes ready after a tick of the micro task queue.
+// A future that becomes ready after a tick of the micro task queue.
 pub struct NextTick {
     inner: JsFuture,
 }
@@ -88,21 +92,15 @@ impl Default for NextTick {
         Self::new()
     }
 }
-
 impl Future for NextTick {
-    type Item = ();
-    type Error = ();
+    type Output = ();
 
-    fn poll(&mut self) -> Poll<(), ()> {
+    fn poll(self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<()> {
         // Polling a `NextTick` just forwards to polling if the inner promise is
         // ready.
-        match self.inner.poll() {
-            Ok(Async::Ready(_)) => Ok(Async::Ready(())),
-            Ok(Async::NotReady) => Ok(Async::NotReady),
-            Err(_) => unreachable!(
-                "We only create NextTick with a resolved inner promise, never \
-                 a rejected one, so we can't get an error here"
-            ),
+        match Pin::new(&mut self.get_mut().inner).poll(ctx) {
+            Poll::Ready(_) => Poll::Ready(()),
+            Poll::Pending => Poll::Pending,
         }
     }
 }

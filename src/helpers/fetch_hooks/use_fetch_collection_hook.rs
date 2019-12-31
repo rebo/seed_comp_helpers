@@ -1,7 +1,8 @@
 use crate::get_app;
 use comp_state::{topo, use_state, StateAccess};
 use enclose::enclose;
-use futures::Future;
+
+use futures_util::FutureExt;
 use seed::*;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -97,11 +98,7 @@ where
                     let lazy_schedule_cmd = enclose!((url, use_fetch) move |_| {
                         let url = url.clone();
                         spawn_local(
-                                {fetch_json::<T,_,Ms,Mdl>(id, url, use_fetch.json_body, use_fetch.method,).then(move |_| {
-                                // let msg_returned_from_effect = res.unwrap_or_else(|err_msg| err_msg);
-                                // recursive call which can blow the call stack
-                                // s.update(Ms::default());
-                                Ok(()) })}
+                                fetch_json::<T,_,Ms,Mdl>(id, url, use_fetch.json_body, use_fetch.method,).map(|_| ())
                             )
 
                     });

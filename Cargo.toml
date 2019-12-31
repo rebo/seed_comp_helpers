@@ -12,17 +12,18 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-comp_state = "0.0.1"
+comp_state = "0.0.4"
 enclose = "1.1.8"
 anymap = "0.12.1"
-
+futures-util = "0.3.1"
 # Keep all the below inline with seed
-seed = "0.4.2"
-wasm-bindgen-futures = "0.3.22"
+seed = "0.5.1"
+# seed = { git = "https://github.com/seed-rs/seed.git", branch = "master" }
+wasm-bindgen-futures = "0.4.5"
 wasm-bindgen = {version = "0.2.50", features = ["serde-serialize"]}
 serde = { version = "^1.0.92", features = ['derive'] }
 serde_json = "^1.0.39"
-futures = "^0.1.27"
+futures = "0.3.1"
 js-sys = "0.3.27"
 
 

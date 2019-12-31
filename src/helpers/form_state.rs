@@ -50,19 +50,19 @@ where
 
 // A local copy of seed's UpdateEl Trait, this allows the form helper return a tuple of (Attrs,Vec<Listeners)
 // Which means that ctrl::text().render() for instance can be used directly in a seed macro
-use seed::dom_types::UpdateEl;
+use seed::virtual_dom::UpdateEl;
 pub trait UpdateElLocal<T> {
     fn update(self, el: &mut T);
 }
 
-impl<Ms> UpdateElLocal<El<Ms>> for (seed::dom_types::Attrs, Vec<seed::events::Listener<Ms>>) {
+impl<Ms> UpdateElLocal<El<Ms>> for (seed::Attrs, Vec<seed::Listener<Ms>>) {
     fn update(self, el: &mut El<Ms>) {
         self.0.update(el);
         self.1.update(el);
     }
 }
 
-impl<Ms> UpdateElLocal<El<Ms>> for (seed::dom_types::Attrs, seed::events::Listener<Ms>) {
+impl<Ms> UpdateElLocal<El<Ms>> for (seed::Attrs, seed::Listener<Ms>) {
     fn update(self, el: &mut El<Ms>) {
         self.0.update(el);
         self.1.update(el);
@@ -177,7 +177,7 @@ where
     }
 
     // renders the (Attr, Vec<Event>) tuple
-    pub fn render(&self) -> (seed::dom_types::Attrs, Vec<seed::events::Listener<Ms>>) {
+    pub fn render(&self) -> (seed::Attrs, Vec<seed::Listener<Ms>>) {
         (
             match &self.input_type {
                 InputType::Text => self.text_attrs(self.name.clone()),
@@ -227,7 +227,7 @@ where
 
     // Various Attrs for Element Types
 
-    fn password_attrs<T: Into<String>>(&self, name: T) -> seed::dom_types::Attrs {
+    fn password_attrs<T: Into<String>>(&self, name: T) -> seed::Attrs {
         let name = name.into();
         // state and access to the form_state, form_state needs to be mutated with new InputState if one does not already exist
         let (mut form_state, form_state_access) = use_state(FormState::default);
@@ -243,7 +243,7 @@ where
         attrs! {At::Type => "password", At::Value => text_input_value}
     }
 
-    fn text_attrs<T: Into<String>>(&self, name: T) -> seed::dom_types::Attrs {
+    fn text_attrs<T: Into<String>>(&self, name: T) -> seed::Attrs {
         let name = name.into();
         // state and access to the form_state, form_state needs to be mutated with new InputState if one does not already exist
         let (mut form_state, form_state_access) = use_state(FormState::default);
@@ -265,7 +265,7 @@ where
 
     // Helper events
 
-    fn clear_errors_blur_event(&self, name: String) -> seed::events::Listener<Ms> {
+    fn clear_errors_blur_event(&self, name: String) -> seed::Listener<Ms> {
         let (_form_state, form_state_access) = use_state(FormState::default);
         input_ev("blur", move |_text| {
             if let Some(mut form_state) = form_state_access.get() {
@@ -281,7 +281,7 @@ where
             Ms::default()
         })
     }
-    fn clear_errors_input_event(&self, name: String) -> seed::events::Listener<Ms> {
+    fn clear_errors_input_event(&self, name: String) -> seed::Listener<Ms> {
         let (_form_state, form_state_access) = use_state(FormState::default);
         input_ev("input", move |_text| {
             if let Some(mut form_state) = form_state_access.get() {
@@ -298,7 +298,7 @@ where
         })
     }
 
-    fn update_value_input_event(&self, name: String) -> seed::events::Listener<Ms> {
+    fn update_value_input_event(&self, name: String) -> seed::Listener<Ms> {
         let (_form_state, form_state_access) = use_state(FormState::default);
         input_ev("input", move |text| {
             if let Some(mut form_state) = form_state_access.get() {
@@ -321,7 +321,7 @@ where
         })
     }
 
-    fn input_specific_on_blur_event(&self) -> Option<seed::events::Listener<Ms>> {
+    fn input_specific_on_blur_event(&self) -> Option<seed::Listener<Ms>> {
         let closure = self.on_blur_closure.clone();
         if closure.is_some() {
             Some(input_ev("blur", move |text| {
@@ -335,7 +335,7 @@ where
         }
     }
 
-    fn form_on_blur_event(&self) -> Option<seed::events::Listener<Ms>> {
+    fn form_on_blur_event(&self) -> Option<seed::Listener<Ms>> {
         let closure = self.form_on_blur_closure.clone();
         if closure.is_some() {
             Some(input_ev("blur", move |_text| {
@@ -353,7 +353,7 @@ where
         &self,
         name: String,
         event_type: &'static str,
-    ) -> Option<seed::events::Listener<Ms>> {
+    ) -> Option<seed::Listener<Ms>> {
         let closures = self.validate_closures.clone();
 
         let (_form_state, form_state_access) = use_state(FormState::default);
@@ -387,7 +387,7 @@ where
     // then any input specific on blur callbacks
     // then validation run
     // finally calling the forms general on blur callback
-    fn events<T: Into<String>>(&self, name: T) -> Vec<seed::events::Listener<Ms>> {
+    fn events<T: Into<String>>(&self, name: T) -> Vec<seed::Listener<Ms>> {
         let name = name.into();
 
         // setup event to clear errors first for every blur and every input

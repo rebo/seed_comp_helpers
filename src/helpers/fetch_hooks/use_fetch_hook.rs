@@ -7,6 +7,7 @@ use comp_state::StateAccess;
 use comp_state::{topo, use_state};
 use enclose::enclose;
 use futures::Future;
+use futures_util::FutureExt;
 use seed::*;
 use serde::de::DeserializeOwned;
 use wasm_bindgen_futures::spawn_local;
@@ -96,12 +97,7 @@ impl UseFetchStatusTrait for StateAccess<UseFetch> {
                 if let Some(app) = get_app::<Ms, Mdl>() {
                     let lazy_schedule_cmd = enclose!((app => s, url) move |_| {
                         let url = url.clone();
-                        spawn_local(  {fetch_string::<Ms>(id, url, method).then(move |_| {
-                                // let msg_returned_from_effect = res.unwrap_or_else(|err_msg| err_msg);
-                                // recursive call which can blow the call stack
-                                s.update(Ms::default());
-                                Ok(()) })}
-                            )
+                        spawn_local( fetch_string::<Ms>(id, url, method).map( |_| () ))
                     });
                     // we need to clear the call stack by NextTick so we don't exceed it's capacity
                     spawn_local(NextTick::new().map(lazy_schedule_cmd));
@@ -119,7 +115,7 @@ pub fn fetch_string<Ms: Default + 'static>(
     id: topo::Id,
     url: String,
     method: Method,
-) -> impl Future<Item = Ms, Error = Ms> {
+) -> impl Future<Output = Result<Ms, Ms>> {
     seed::fetch::Request::new(url)
         .method(method)
         .fetch_string(move |f| {

@@ -2,7 +2,7 @@ use seed::{prelude::*, *};
 
 /// Shortcut for mouse_ev(Ev::Click, ...)
 /// with the exception that the defailt Message gets returned
-pub fn on_click<Ms, F>(func: F) -> events::Listener<Ms>
+pub fn on_click<Ms, F>(func: F) -> seed::Listener<Ms>
 where
     Ms: Default + Clone,
     F: FnOnce(web_sys::MouseEvent) -> () + 'static + Clone,
@@ -15,7 +15,7 @@ where
 
 /// Shortcut for input_ev(Ev::Input, ...)
 /// with the exception that the defailt Message gets returned
-pub fn on_input<Ms, F>(func: F) -> events::Listener<Ms>
+pub fn on_input<Ms, F>(func: F) -> seed::Listener<Ms>
 where
     Ms: Default + Clone,
     F: FnOnce(String) -> () + 'static + Clone,
