@@ -1,6 +1,6 @@
 [package]
 name = "seed_comp_helpers"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["rebo <rebotfc@gmail.com>"]
 repository = "https://github.com/rebo/seed_comp_helpers"
 description = "Component State - a clone of React Hooks use_state"
