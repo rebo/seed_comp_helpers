@@ -16,23 +16,22 @@ use wasm_bindgen_futures::spawn_local;
 /// into type T. fetcher.dispatch() needs to be called to actually start the fetching. It is done this way so you can
 /// use fetcher in a callback.
 ///
+#[topo::nested]
 pub fn use_fetch<T: Clone + DeserializeOwned>(
     url: String,
     method: Method,
 ) -> (Option<T>, impl UseFetchStatusTrait) {
-    topo::call!({
-        let (state, fetcher) = use_state(|| UseFetch::new(url, method));
+    let (state, fetcher) = use_state(|| UseFetch::new(url, method));
 
-        let maybe_fetched: Option<T> = match (state.status, state.string_response) {
-            (UseFetchStatus::Complete, Some(response)) => {
-                let result: Result<T, _> = serde_json::from_str(&response);
-                let poss = result.unwrap();
-                Some(poss)
-            }
-            _ => None,
-        };
-        (maybe_fetched, fetcher)
-    })
+    let maybe_fetched: Option<T> = match (state.status, state.string_response) {
+        (UseFetchStatus::Complete, Some(response)) => {
+            let result: Result<T, _> = serde_json::from_str(&response);
+            let poss = result.unwrap();
+            Some(poss)
+        }
+        _ => None,
+    };
+    (maybe_fetched, fetcher)
 }
 
 use std::default::Default;
@@ -95,7 +94,7 @@ impl UseFetchStatusTrait for StateAccess<UseFetch> {
         let boxed_fn = {
             Box::new(move || {
                 if let Some(app) = get_app::<Ms, Mdl>() {
-                    let lazy_schedule_cmd = enclose!((app => s, url) move |_| {
+                    let lazy_schedule_cmd = enclose!((app => _s, url) move |_| {
                         let url = url.clone();
                         spawn_local( fetch_string::<Ms>(id, url, method).map( |_| () ))
                     });

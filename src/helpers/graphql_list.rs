@@ -55,6 +55,7 @@ where
     }
 }
 
+#[topo::nested]
 pub fn use_graphql_list<
     C: Clone + DeserializeOwned + 'static + IntoList<I>,
     I: Clone + DeserializeOwned,
@@ -62,40 +63,38 @@ pub fn use_graphql_list<
     query: &str,
     url: &str,
 ) -> (List<I>, GraphQLListControl<C, I>) {
-    topo::call!({
-        //create a blank list to be used later
-        let (_list, list_control) = use_list(|| vec![]);
+    //create a blank list to be used later
+    let (_list, list_control) = use_list(|| vec![]);
 
-        // intialize fetch objects and control
+    // intialize fetch objects and control
 
-        let json_request = SendMessageRequestBody {
-            query: query.to_string(),
-        };
+    let json_request = SendMessageRequestBody {
+        query: query.to_string(),
+    };
 
-        let (fetched, fetch_control) = fetch_hooks::use_fetch_collection::<
-            C,
-            I,
-            SendMessageRequestBody,
-        >(url, Method::Post, json_request);
-        // if fetched is returned as Some then
-        // load list_control
-        if let Some(fetched) = fetched {
-            comp_state::do_once({
-                || {
-                    for item in fetched.items() {
-                        list_control.push(item.clone());
-                    }
+    let (fetched, fetch_control) = fetch_hooks::use_fetch_collection::<C, I, SendMessageRequestBody>(
+        url,
+        Method::Post,
+        json_request,
+    );
+    // if fetched is returned as Some then
+    // load list_control
+    if let Some(fetched) = fetched {
+        comp_state::do_once({
+            || {
+                for item in fetched.items() {
+                    list_control.push(item.clone());
                 }
-            })
-        }
+            }
+        })
+    }
 
-        let graphql_list_control = GraphQLListControl::<C, I> {
-            list: list_control,
-            fetcher: fetch_control,
-        };
-        // return list, list_c otnrol, and fetch_cotnrol
-        (graphql_list_control.get_list(), graphql_list_control)
-    })
+    let graphql_list_control = GraphQLListControl::<C, I> {
+        list: list_control,
+        fetcher: fetch_control,
+    };
+    // return list, list_c otnrol, and fetch_cotnrol
+    (graphql_list_control.get_list(), graphql_list_control)
 }
 
 // no method named `items` found for type `helpers::use_fetch_hooks::use_fetch_collection_hook::ArrayResponse<C, I>` in the current scope

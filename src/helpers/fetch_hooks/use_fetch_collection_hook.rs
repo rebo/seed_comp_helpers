@@ -15,6 +15,7 @@ type FetcherContainerItemJson<C, I, J> = StateAccess<UseFetchCollection<ArrayRes
 
 /// use_fetch just returns a single struct. This returns a collection
 /// collection_name is used to ensure the json deserializes into ArrayResponse(data:DataResponseEnum::UseFetchCollectionItems)
+#[topo::nested]
 pub fn use_fetch_collection<
     C: Clone + DeserializeOwned + 'static + IntoList<I>,
     I: Clone + DeserializeOwned + 'static,
@@ -27,21 +28,18 @@ pub fn use_fetch_collection<
     Option<ArrayResponse<C, I>>,
     FetcherContainerItemJson<C, I, J>,
 ) {
-    topo::call!({
-        let (state, state_access) =
-            use_state(|| UseFetchCollection::<ArrayResponse<C, I>, J>::new(url, json, method));
+    let (state, state_access) =
+        use_state(|| UseFetchCollection::<ArrayResponse<C, I>, J>::new(url, json, method));
 
-        let possible_type: Option<ArrayResponse<C, I>> = match (state.status, state.string_response)
-        {
-            (UseFetchStatus::Complete, Some(response)) => {
-                let result: Result<ArrayResponse<C, I>, _> = serde_json::from_str(&response);
-                let poss = result.unwrap();
-                Some(poss)
-            }
-            _ => None,
-        };
-        (possible_type, state_access)
-    })
+    let possible_type: Option<ArrayResponse<C, I>> = match (state.status, state.string_response) {
+        (UseFetchStatus::Complete, Some(response)) => {
+            let result: Result<ArrayResponse<C, I>, _> = serde_json::from_str(&response);
+            let poss = result.unwrap();
+            Some(poss)
+        }
+        _ => None,
+    };
+    (possible_type, state_access)
 }
 
 #[derive(Clone, Debug)]

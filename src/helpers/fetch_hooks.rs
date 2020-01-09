@@ -13,7 +13,7 @@ pub use use_fetch_hook::{use_fetch, UseFetch, UseFetchStatusTrait};
 
 use comp_state::{topo, update_state_with_topo_id};
 
-use seed::{prelude::*, *};
+use seed::*;
 use serde::de::{DeserializeOwned, Deserializer};
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;

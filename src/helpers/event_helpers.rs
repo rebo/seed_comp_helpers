@@ -1,4 +1,4 @@
-use seed::{prelude::*, *};
+use seed::prelude::*;
 
 /// Shortcut for mouse_ev(Ev::Click, ...)
 /// with the exception that the defailt Message gets returned
